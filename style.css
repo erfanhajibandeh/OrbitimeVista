@@ -1,13 +1,18 @@
 
 body {
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c9/Sirius_A_and_B_artwork.jpg'); 
+    background-image: url('https://img.freepik.com/free-vector/decorative-small-golden-stars-with-empty-space-vector_1017-48404.jpg?w=1800&t=st=1710564847~exp=1710565447~hmac=fd8bb756fcc198f3bc3974205f1f03a1db77fd97de464957b0d2de9c1685114e'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Use the full viewport height */
     margin: 0;
     padding: 0;
     overflow: hidden;
 }
+
 
 .tooltip {
     position: absolute;
