@@ -6,4 +6,4 @@ This tool was born out of the need to stay connected with friends living in vari
 
 Should you wish to customize this visualization for your circle, feel free to adjust the country names or add your friends' names to the existing setup with your preferred time ranges before deploying it  somewhere like on Heroku. Deploy your version and keep the connections alive, no matter where life takes you and your friends!
 
-Test it here: 
+Test it here: https://orbitimevista.netlify.app
