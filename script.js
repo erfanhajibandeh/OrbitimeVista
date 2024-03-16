@@ -10,10 +10,12 @@ document.addEventListener("DOMContentLoaded", function() {
         { name: "MH", country: "Iran", city: "Tehran", timezone: "Asia/Tehran" }
     ];
 
-    var svgWidth = 800, svgHeight = 650;
+    var svgWidth = Math.min(800, window.innerWidth - 20), // 800 or less depending on viewport width
+    svgHeight = Math.min(600, window.innerHeight - 20); // 600 or less depending on viewport height
+
     var radiusIncrement = 20; 
-    var centerOffsetX = svgWidth / 2.15; 
-    var centerOffsetY = svgHeight / 1.5; 
+    var centerOffsetX = svgWidth / 2; 
+    var centerOffsetY = svgHeight / 2; 
 
     var svg = d3.select("#visualization").append("svg")
         .attr("width", svgWidth)
