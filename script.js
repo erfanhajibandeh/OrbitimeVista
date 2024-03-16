@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
     var friends = [
         { name: "EH", country: "Canada", city: "Vancouver", timezone: "America/Vancouver" },
-        { name: "MM", country: "Canada", city: "Ottawa", timezone: "America/Toronto" },
         { name: "AK", country: "Canada", city: "Guelph", timezone: "America/Toronto" },
+        { name: "SR", country: "Germany", city: "Offenburg", timezone: "Europe/Berlin" },
         { name: "PE", country: "Canada", city: "Guelph", timezone: "America/Toronto" },
+        { name: "MM", country: "Canada", city: "Ottawa", timezone: "America/Toronto" },
         { name: "MS", country: "Canada", city: "Calgary", timezone: "America/Edmonton" },
         { name: "NS", country: "UK", city: "London", timezone: "Europe/London" },
-        { name: "SR", country: "Germany", city: "Offenburg", timezone: "Europe/Berlin" },
         { name: "MH", country: "Iran", city: "Tehran", timezone: "Asia/Tehran" }
     ];
 
@@ -63,31 +63,115 @@ document.addEventListener("DOMContentLoaded", function() {
     glowMerge.append("feMergeNode")
         .attr("in", "SourceGraphic");
 
+    // Function to show tooltip
+    function showTooltip(event, friend) {
+        tooltip.style("opacity", 1);
+        var now = new Date().toLocaleString("en-US", {timeZone: friend.timezone});
+        now = new Date(now);
+        tooltip.html(friend.name + " - " + friend.city + ", " + friend.country + "<br/>" + now.toLocaleTimeString())
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+    }
+
+    // Function to hide tooltip
+    function hideTooltip() {
+        tooltip.style("opacity", 0);
+    }
+
+    function createMovingCircles() {
+        var movingCirclesCount = 10; 
+    
+        for (var i = 0; i < movingCirclesCount; i++) {
+            animateMovingCircle();
+        }
+    }
+    
+    function animateMovingCircle() {
+        var duration = 3000 + Math.random() * 3000; // Random duration between 2000 and 5000 milliseconds for each animation cycle
+        var startX = Math.random() * svgWidth - svgWidth  + centerOffsetX;
+        var startY = Math.random() * svgHeight - svgHeight + centerOffsetY;
+        var endX = Math.random() * svgWidth - svgWidth+ centerOffsetX;
+        var endY = Math.random() * svgHeight - svgHeight + centerOffsetY;
+        var colors = ["blue", "black", "red"]; // Array of color options
+        var randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+        var circle = svg.append("circle")
+            .attr("cx", startX)
+            .attr("cy", startY)
+            .attr("r", Math.random() + 1)
+            .style("fill", randomColor); 
+    
+        // Animate movement from start to end position
+        (function repeat() {
+            circle
+                .transition()
+                .duration(duration)
+                .attr("cx", endX)
+                .attr("cy", endY)
+                .ease(d3.easeLinear)
+                .on("end", function() {
+                    // Reset positions for continuous movement
+                    startX = Math.random() * svgWidth - svgWidth  + centerOffsetX;
+                    startY = Math.random() * svgHeight - svgHeight + centerOffsetY;
+                    endX = Math.random() * svgWidth - svgWidth+ centerOffsetX;
+                    endY = Math.random() * svgHeight - svgHeight + centerOffsetY;
+                    
+                    circle.attr("cx", startX).attr("cy", startY); // Move circle back without animation
+    
+                    repeat();
+                });
+        })();
+    }
+
     function generateComet() {
         var targets = svg.selectAll(".friend-circle").nodes();
         var targetIndex = Math.floor(Math.random() * targets.length);
         var target = d3.select(targets[targetIndex]);
+        var colors = ["blue", "black", "red"]; // Array of color options
+        var randomColor = colors[Math.floor(Math.random() * colors.length)];
     
-        let startX = svgWidth; // Starting just off the right edge
-        let startY = Math.random() * svgHeight; // Random vertical start position
+        // Randomly choose an edge: 0 = top, 1 = right, 2 = bottom, 3 = left
+        let edge = Math.floor(Math.random() * 4);
     
-        let endX = parseFloat(target.attr("cx")) + centerOffsetX +10;
-        let endY = parseFloat(target.attr("cy")) + centerOffsetY ;
+        let startX, startY;
+        switch (edge) {
+            case 0: // Start from top
+                startX = Math.random() * svgWidth;
+                startY = -20; // Just above the SVG
+                break;
+            case 1: // Start from right
+                startX = svgWidth + 20;
+                startY = Math.random() * svgHeight;
+                break;
+            case 2: // Start from bottom
+                startX = Math.random() * svgWidth;
+                startY = svgHeight + 20;
+                break;
+            case 3: // Start from left
+                startX = -20;
+                startY = Math.random() * svgHeight;
+                break;
+        }
     
-        // Adjusting the comet to be added directly to the SVG, ensuring it's not affected by the group's transform
+        let endX = parseFloat(target.attr("cx")) + centerOffsetX;
+        let endY = parseFloat(target.attr("cy")) + centerOffsetY;
+    
         var comet = d3.select("#visualization").select("svg").append("circle")
             .attr("cx", startX)
             .attr("cy", startY)
-            .attr("r", 4) 
-            .style("fill", "black")
+            .attr("r", Math.random() + 1.3)
+            .style("fill", randomColor)
             .transition()
-            .duration(1500)
+            .ease(d3.easeLinear) 
+            .style("filter", "url(#spark-effect)") 
+            .duration(Math.random() *10000)
             .attr("cx", endX)
             .attr("cy", endY)
             .on("end", function() {
                 impactEffect(target);
                 d3.select(this).remove();
             });
+            
     }
     
     function impactEffect(target) {
@@ -104,11 +188,13 @@ document.addEventListener("DOMContentLoaded", function() {
     function isDaytime(now) {
         return now.getHours() >= 6 && now.getHours() < 20;
     }
-
+    var daytimeFriendsCount = 0;
     // function to define planets (firends)
     friends.forEach(function(friend, index) {
         var now = new Date().toLocaleString("en-US", {timeZone: friend.timezone});
         now = new Date(now);
+        if (isDaytime(now)) {
+            daytimeFriendsCount++;}
         var daytime = isDaytime(now);
         var color = daytime ? "gold" : "black";
         var circleColor = daytime ? "gold" : "grey";
@@ -127,6 +213,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .attr("r", radius)
             .style("fill", "none")
             .style("stroke", color)
+            .style("filter", "url(#spark-effect)") 
             .style("stroke-width", 2);
 
         // Draw background circle for initials (simulating sun/moon)
@@ -136,15 +223,17 @@ document.addEventListener("DOMContentLoaded", function() {
             .attr("r", 9) 
             .style("fill", circleColor)
             .attr("class", "friend-circle") 
-            .on("mouseover", function() {
+            .on("mouseover", function(event) {
                 d3.select(this).transition()
                     .duration(200)
-                    .attr("r", 12);
+                    .attr("r", 12); // Increased radius on mouseover
+                showTooltip(event, friend);
             })
             .on("mouseout", function() {
                 d3.select(this).transition()
                     .duration(200)
-                    .attr("r", 9);
+                    .attr("r", 9); // Revert to original radius
+                hideTooltip();
             });
         // Draw text (initials)
         var text = svg.append("text")
@@ -206,8 +295,24 @@ document.addEventListener("DOMContentLoaded", function() {
             .style("fill", "black")
             .style("font-size", "14px"); 
     }
+    // Check if all friends are in daytime and display a sign if true
+    if (daytimeFriendsCount === friends.length) {
+        displayAllDaytimeSign();
+    }
+
+    function displayAllDaytimeSign() {
+
+        svg.append("text")
+            .attr("x", 0) 
+            .attr("y", -200)
+            .attr("text-anchor", "middle")
+            .text("All Available!")
+            .style("fill", "red") 
+            .style("font-size", "24px") 
+            .attr("class", "daytime-sign"); 
+    }
     setInterval(function() {
         generateComet(); 
-    }, 2000);   
-    
+    }, 3500);   
+    createMovingCircles();
 });
